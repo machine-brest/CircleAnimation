@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.layout.*?>
+<BorderPane stylesheets="@../styles/main.css" xmlns="http://javafx.com/javafx/8" xmlns:fx="http://javafx.com/fxml/1">
+   <center>
+      <Pane id="content-pane" fx:id="contentPane" prefHeight="600" prefWidth="800" BorderPane.alignment="CENTER" />
+   </center>
+   <right>
+      <Pane fx:id="commandPane" prefWidth="200.0" BorderPane.alignment="TOP_LEFT" />
+   </right>
+</BorderPane>
