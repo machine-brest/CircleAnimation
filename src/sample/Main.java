@@ -1,21 +1,24 @@
 package sample;
 
 import javafx.animation.*;
-import javafx.fxml.FXMLLoader;
 import javafx.application.Application;
+import javafx.geometry.Insets;
 import javafx.scene.Group;
-import javafx.scene.Parent;
 import javafx.scene.Scene;
+import javafx.scene.control.CheckBox;
+import javafx.scene.control.CheckBoxBuilder;
+import javafx.scene.layout.Pane;
+import javafx.scene.layout.StackPane;
+import javafx.scene.layout.VBox;
+import javafx.scene.layout.VBoxBuilder;
 import javafx.scene.paint.Color;
-import javafx.scene.shape.Circle;
-import javafx.scene.shape.Line;
-import javafx.scene.shape.StrokeType;
+import javafx.scene.shape.*;
 import javafx.stage.Stage;
 import javafx.util.Duration;
 
 public class Main extends Application {
 
-	public static final double STAGE_WIDTH  = 800;
+	public static final double STAGE_WIDTH  = 1024;
 	public static final double STAGE_HEIGHT = 600;
 
 	@Override
@@ -29,7 +32,7 @@ public class Main extends Application {
 		double outerRadius = Math.min(STAGE_WIDTH, STAGE_HEIGHT) / 2 - 30;
 		double innerRadius = outerRadius * 0.5;
 
-		Circle outerCircle = new Circle(xc, yc, outerRadius);
+		Circle outerCircle = new Circle(xc, yc, outerRadius +21);
 		outerCircle.setFill(Color.web("#dd0000", 0.3));
 		outerCircle.setStroke(Color.web("#ffffff", 0.4));
 		outerCircle.setStrokeWidth(3);
@@ -57,6 +60,7 @@ public class Main extends Application {
 			line.setStrokeType(StrokeType.CENTERED);
 			line.setSmooth(false);
 			line.setStrokeWidth(1);
+			line.setVisible(true);
 			lines.getChildren().add(line);
 		}
 
@@ -71,6 +75,7 @@ public class Main extends Application {
 		rotationCircle.setFill(Color.web("#ff0000", 0.1));
 		rotationCircle.setStroke(Color.web("#ffffff", 0.2));
 		rotationCircle.setStrokeWidth(1);
+		rotationCircle.setVisible(false);
 		rotationGroup.getChildren().add(rotationCircle);
 
 		for (int i = 0; i < 12; ++i) {
@@ -104,14 +109,52 @@ public class Main extends Application {
 		rotateTransition.setToAngle(0);
 		rotateTransition.setAutoReverse(false);
 
+		rotateTransition.setAxis(innerCircle.getRotationAxis());
+
 		ParallelTransition parallelTransition = new ParallelTransition(rotationGroup, rotateTransition, pathTransition);
 		parallelTransition.setInterpolator(Interpolator.LINEAR);
 		parallelTransition.setCycleCount(Timeline.INDEFINITE);
 		parallelTransition.setAutoReverse(false);
 		parallelTransition.play();
 
+		Pane overlay = getOverlay();
+		overlay.setLayoutX(STAGE_WIDTH - 200);
+		overlay.setLayoutY(20);
+
+		root.getChildren().add(overlay);
+
 		primaryStage.setScene(scene);
 		primaryStage.show();
+	}
+
+	private Pane getOverlay()
+	{
+		StackPane pane  = new StackPane();
+		Rectangle frame = RectangleBuilder.create()
+				.height(200).width(180)
+				.fill(Color.web("gray", 0.3)).stroke(Color.GRAY)
+				.build();
+
+		pane.getChildren().add(frame);
+
+		VBox vbox = VBoxBuilder.create()
+				.padding(new Insets(10, 10, 10, 10))
+				.fillWidth(true)
+				.spacing(5)
+				.build();
+
+		CheckBox checkBoxShowLines1 = CheckBoxBuilder.create()
+				.text("Show lines").selected(true)
+				.build();
+
+		CheckBox checkBoxShowLines2 = CheckBoxBuilder.create()
+				.text("Show lines").selected(true)
+				.build();
+
+		vbox.getChildren().addAll(checkBoxShowLines1, checkBoxShowLines2);
+		pane.getChildren().add(vbox);
+
+		return pane;
 	}
 
 	public static void main(String[] args) {
