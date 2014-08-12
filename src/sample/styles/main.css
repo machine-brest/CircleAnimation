@@ -1,3 +1,84 @@
-#content-pane {
-	-fx-background-color: #000000;
+#contentPane {
+	-fx-background-color: #293135;
+}
+
+#commandPane {
+	-fx-alignment: top-left;
+	-fx-background-color: #3c3f41;
+}
+
+#commandPane VBox {
+	-fx-alignment: top-left;
+	-fx-padding: 10px;
+	-fx-spacing: 10.0;
+}
+
+#commandPane .check-box {
+	-fx-text-fill: #dfdfd0;
+}
+
+#commandPane .button {
+	-fx-background-color: transparent;
+	-fx-border-color: #55585a;
+	-fx-border-radius: 5;
+	-fx-text-fill: #dfdfd0;
+}
+
+#commandPane .button:hover {
+	-fx-background-color: #4a4d4f;
+	-fx-border-color: #a8a899;
+	-fx-text-fill: #dfdfd0;
+}
+
+#commandPane #playButton {
+	-fx-font-size: 18px;
+	-fx-pref-height: 30px;
+}
+
+.outer-circle {
+	-fx-fill: #dd0000;
+	-fx-opacity: 0.5;
+	-fx-stroke: derive(#ffa500, 70%);
+	-fx-stroke-type: centered;
+	-fx-stroke-width: 3px;
+}
+
+.inner-circle {
+	-fx-fill: #000;
+	-fx-opacity: 0.1;
+	-fx-stroke: derive(#dcdcdc, 20%);
+	-fx-stroke-type: centered;
+	-fx-stroke-width: 1px;
+}
+
+.radial-line {
+	-fx-fill: #000;
+	-fx-opacity: 0.2;
+	-fx-stroke-width: 1.0;
+	-fx-stroke-dash-array: 4px;
+	-fx-stroke-dash-offset: 1;
+}
+
+.rotate-circle {
+	-fx-fill: #ff0000;
+	-fx-opacity: 0.1;
+	-fx-stroke: derive(#ffffff, 20%);
+	-fx-stroke-type: centered;
+	-fx-stroke-width: 1px;
+}
+
+.rotate-ball {
+	-fx-fill: radial-gradient(center 50% 50%, radius 60%, #ffffff, #b54040 0.12, #6d3636 1.0);
+	-fx-opacity: 0.4;
+	-fx-stroke: derive(#ffffff, 40%);
+	-fx-stroke-type: centered;
+	-fx-stroke-width: 1px;
+}
+
+.rotate-ball-center {
+	-fx-fill: #dd0000;
+	-fx-opacity: 0.3;
+	-fx-stroke: derive(#ffffff, 40%);
+	-fx-stroke-type: centered;
+	-fx-stroke-width: 1px;
 }

@@ -1,32 +1,61 @@
 package sample;
 
+import javafx.animation.*;
 import javafx.application.Application;
+import javafx.beans.property.SimpleBooleanProperty;
+import javafx.beans.property.SimpleDoubleProperty;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
+import javafx.fxml.Initializable;
+import javafx.scene.Group;
 import javafx.scene.Scene;
+import javafx.scene.control.Button;
+import javafx.scene.control.CheckBox;
 import javafx.scene.layout.Pane;
-import javafx.scene.paint.Color;
 import javafx.scene.shape.Circle;
+import javafx.scene.shape.Line;
 import javafx.stage.Stage;
+import javafx.util.Duration;
 
 import java.io.IOException;
+import java.net.URL;
+import java.util.ResourceBundle;
 
 public class App extends Application
 {
-	private class AppController
+	private class AppController implements Initializable
 	{
 		private Pane root;
 
+		/**
+		 * UI control binding
+		 */
 		@FXML private Pane contentPane;
 		@FXML private Pane commandPane;
+		@FXML private CheckBox showLinesCheckbox;
+		@FXML private CheckBox showInnerCircleCheckbox;
+		@FXML private CheckBox showRotateCircleCheckbox;
+		@FXML private Button playButton;
+
+		/**
+		 * Properties
+		 */
+		private SimpleDoubleProperty sceneWidth = new SimpleDoubleProperty(800);
+		private SimpleDoubleProperty sceneHeight = new SimpleDoubleProperty(600);
+		private SimpleBooleanProperty showLines = new SimpleBooleanProperty(false);
+		private SimpleBooleanProperty showInnerCircle = new SimpleBooleanProperty(false);
+		private SimpleBooleanProperty showRotateCircle = new SimpleBooleanProperty(false);
+
+		ParallelTransition transition;
 
 		public void start(Stage primaryStage) {
 
 			try {
+				setUserAgentStylesheet(STYLESHEET_MODENA);
+
 				FXMLLoader loader = new FXMLLoader();
 				loader.setLocation(AppController.class.getResource("view/app-shell.fxml"));
 				loader.setController(this);
-
 				root = loader.load();
 			}
 			catch (IOException ex) {
@@ -34,13 +63,9 @@ public class App extends Application
 				System.exit(1);
 			}
 
-			setUserAgentStylesheet(STYLESHEET_MODENA);
-
-			Scene scene = new Scene(root);
-
 			initContentPane(contentPane);
 
-			primaryStage.setScene(scene);
+			primaryStage.setScene(new Scene(root));
 			primaryStage.setResizable(false);
 			primaryStage.setTitle("Circle rotation animation");
 			primaryStage.show();
@@ -48,21 +73,106 @@ public class App extends Application
 
 		protected void initContentPane(Pane parent) {
 
+			parent.setPrefSize(sceneWidth.get(), sceneHeight.get());
 			parent.autosize();
 
-			double stageWidth  = parent.getWidth();
-			double stageHeight = parent.getHeight();
-
-			double xc = stageWidth / 2 + 0.5;
-			double yc = stageHeight / 2 + 0.5;
-			double outerRadius = Math.min(stageWidth, stageHeight) / 2 - 30;
+			double outerRadius = Math.min(sceneHeight.get(), sceneHeight.get()) / 2 - 30;
 			double innerRadius = outerRadius * 0.5;
+			double xc = sceneWidth.get()  / 2 + 0.5;
+			double yc = sceneHeight.get() / 2 + 0.5;
 
-			Circle outerCircle = new Circle(xc, yc, outerRadius +21);
-			outerCircle.setFill(Color.web("#dd0000", 0.3));
-			outerCircle.setStroke(Color.web("#ffffff", 0.4));
-			outerCircle.setStrokeWidth(3);
-			parent.getChildren().add(outerCircle);
+			Circle outerCircle = new Circle(xc, yc, outerRadius + 21);
+			outerCircle.getStyleClass().add("outer-circle");
+
+			Circle innerCircle = new Circle(xc, yc, innerRadius);
+			innerCircle.visibleProperty().bindBidirectional(showInnerCircle);
+			innerCircle.getStyleClass().add("inner-circle");
+
+			parent.getChildren().addAll(outerCircle, innerCircle);
+
+			Group lines = new Group();
+
+			for (int i = 0; i < 24; ++i) {
+
+				double f  = 2 * Math.PI / 24 * i;
+				double x0 = xc + outerRadius * Math.cos(f);
+				double y0 = yc + outerRadius * Math.sin(f);
+				double x1 = xc + outerRadius * Math.cos(f + Math.PI);
+				double y1 = yc + outerRadius * Math.sin(f + Math.PI);
+
+				Line line = new Line(x0, y0, x1, y1);
+				line.getStyleClass().add("radial-line");
+				line.visibleProperty().bindBidirectional(showLines);
+				lines.getChildren().add(line);
+			}
+
+			parent.getChildren().add(lines);
+
+			Group rotationGroup = new Group();
+
+			double rxc = xc + innerRadius;
+			double rotateRadius = outerRadius - innerRadius;
+
+			Circle rotateCircle = new Circle(rxc, yc, rotateRadius);
+			rotateCircle.getStyleClass().add("rotate-circle");
+			rotateCircle.visibleProperty().bindBidirectional(showRotateCircle);
+			rotationGroup.getChildren().add(rotateCircle);
+
+			for (int i = 0; i < 12; ++i) {
+
+				double cxi = rxc + rotateRadius * Math.cos(2 * Math.PI / 12 * i);
+				double cyi = yc  + rotateRadius * Math.sin(2 * Math.PI / 12 * i);
+
+				Circle ball = new Circle(cxi, cyi, 20);
+				ball.getStyleClass().add("rotate-ball");
+				rotationGroup.getChildren().add(ball);
+			}
+
+			PathTransition pt = new PathTransition(Duration.millis(9000), innerCircle, rotationGroup);
+			pt.setInterpolator(Interpolator.LINEAR);
+			pt.setAutoReverse(false);
+
+			RotateTransition rt = new RotateTransition(Duration.millis(9000), rotationGroup);
+			rt.setInterpolator(Interpolator.LINEAR);
+			rt.setFromAngle(360);
+			rt.setToAngle(0);
+			rt.setAutoReverse(false);
+
+			transition = new ParallelTransition(rotationGroup, rt, pt);
+			transition.setInterpolator(Interpolator.LINEAR);
+			transition.setCycleCount(Timeline.INDEFINITE);
+			transition.setAutoReverse(false);
+
+			parent.getChildren().add(rotationGroup);
+		}
+
+		@Override
+		public void initialize(URL location, ResourceBundle resources) {
+
+			showLinesCheckbox.selectedProperty().bindBidirectional(showLines);
+			showInnerCircleCheckbox.selectedProperty().bindBidirectional(showInnerCircle);
+			showRotateCircleCheckbox.selectedProperty().bindBidirectional(showRotateCircle);
+
+			playButton.setOnAction(event -> {
+				if (transition.getStatus() == Animation.Status.RUNNING) {
+					stopAnimation();
+					playButton.setText("Play");
+				} else {
+					playAnimation();
+					playButton.setText("Stop");
+				}
+			});
+		}
+
+		@FXML
+		public void playAnimation() {
+			transition.play();
+		}
+
+		@FXML
+		public void stopAnimation() {
+			transition.jumpTo(Duration.ZERO);
+			transition.stop();
 		}
 	}
 
