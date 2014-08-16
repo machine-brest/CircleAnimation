@@ -4,6 +4,8 @@ import javafx.animation.*;
 import javafx.application.Application;
 import javafx.beans.property.SimpleBooleanProperty;
 import javafx.beans.property.SimpleDoubleProperty;
+import javafx.event.ActionEvent;
+import javafx.event.EventHandler;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.fxml.Initializable;
@@ -153,13 +155,16 @@ public class App extends Application
 			showInnerCircleCheckbox.selectedProperty().bindBidirectional(showInnerCircle);
 			showRotateCircleCheckbox.selectedProperty().bindBidirectional(showRotateCircle);
 
-			playButton.setOnAction(event -> {
-				if (transition.getStatus() == Animation.Status.RUNNING) {
-					stopAnimation();
-					playButton.setText("Play");
-				} else {
-					playAnimation();
-					playButton.setText("Stop");
+			playButton.setOnAction(new EventHandler<ActionEvent>() {
+				@Override
+				public void handle(ActionEvent event) {
+					if (transition.getStatus() == Animation.Status.RUNNING) {
+						stopAnimation();
+						playButton.setText("Play");
+					} else {
+						playAnimation();
+						playButton.setText("Stop");
+					}
 				}
 			});
 		}
