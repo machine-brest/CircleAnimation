@@ -1,5 +1,6 @@
 package sample;
 
+import com.sun.javafx.perf.PerformanceTracker;
 import javafx.animation.*;
 import javafx.application.Application;
 import javafx.beans.property.SimpleBooleanProperty;
@@ -13,6 +14,7 @@ import javafx.scene.Group;
 import javafx.scene.Scene;
 import javafx.scene.control.Button;
 import javafx.scene.control.CheckBox;
+import javafx.scene.control.Label;
 import javafx.scene.layout.Pane;
 import javafx.scene.shape.Circle;
 import javafx.scene.shape.Line;
@@ -25,6 +27,8 @@ import java.util.ResourceBundle;
 
 public class App extends Application
 {
+	private static PerformanceTracker perfTracker;
+
 	private class AppController implements Initializable
 	{
 		private Pane root;
@@ -38,6 +42,8 @@ public class App extends Application
 		@FXML private CheckBox showInnerCircleCheckbox;
 		@FXML private CheckBox showRotateCircleCheckbox;
 		@FXML private Button playButton;
+		@FXML private Button aboutButton;
+		@FXML private Label fpsLabel;
 
 		/**
 		 * Properties
@@ -50,9 +56,14 @@ public class App extends Application
 
 		ParallelTransition transition;
 
+		private final long[] frameTimes = new long[100];
+		private int frameTimeIndex = 0;
+		private boolean arrayFilled = false;
+
 		public void start(Stage primaryStage) {
 
 			try {
+
 				setUserAgentStylesheet(STYLESHEET_MODENA);
 
 				FXMLLoader loader = new FXMLLoader();
@@ -71,10 +82,12 @@ public class App extends Application
 			primaryStage.setResizable(false);
 			primaryStage.setTitle("Circle rotation animation");
 			primaryStage.show();
+
+			initFpsMeter(fpsLabel);
 		}
 
-		protected void initContentPane(Pane parent) {
-
+		protected void initContentPane(Pane parent)
+		{
 			parent.setPrefSize(sceneWidth.get(), sceneHeight.get());
 			parent.autosize();
 
@@ -148,12 +161,59 @@ public class App extends Application
 			parent.getChildren().add(rotationGroup);
 		}
 
+		private float getFPS()
+		{
+			float fps = perfTracker.getAverageFPS();
+			perfTracker.resetAverageFPS();
+			return fps;
+		}
+
+		public void initFpsMeter(Label fpsLabel)
+		{
+			AnimationTimer animationTimer = new AnimationTimer()
+			{
+				@Override
+				public void handle(long now)
+				{
+					long oldFrameTime = frameTimes[frameTimeIndex];
+					frameTimes[frameTimeIndex] = now;
+					frameTimeIndex = (frameTimeIndex + 1) % frameTimes.length;
+
+					if (frameTimeIndex == 0) {
+						arrayFilled = true;
+					}
+
+					if (arrayFilled) {
+						long elapsedNanos = now - oldFrameTime;
+						long elapsedNanosPerFrame = elapsedNanos / frameTimes.length;
+						double frameRate = 1_000_000_000.0 / elapsedNanosPerFrame;
+						fpsLabel.setText(String.format("fps: %.2f", frameRate));
+					}
+				}
+			};
+
+			animationTimer.start();
+		}
+
 		@Override
 		public void initialize(URL location, ResourceBundle resources) {
 
 			showLinesCheckbox.selectedProperty().bindBidirectional(showLines);
 			showInnerCircleCheckbox.selectedProperty().bindBidirectional(showInnerCircle);
 			showRotateCircleCheckbox.selectedProperty().bindBidirectional(showRotateCircle);
+
+			aboutButton.setOnAction(new EventHandler<ActionEvent>()
+			{
+				@Override
+				public void handle(ActionEvent event)
+				{
+					Alert alert = new Alert(AlertType.INFORMATION);
+					alert.setTitle("Information Dialog");
+					alert.setHeaderText(null);
+					alert.setContentText("I have a great message for you!");
+					alert.showAndWait();
+				}
+			});
 
 			playButton.setOnAction(new EventHandler<ActionEvent>() {
 				@Override
