@@ -12,6 +12,7 @@ import javafx.fxml.FXMLLoader;
 import javafx.fxml.Initializable;
 import javafx.scene.Group;
 import javafx.scene.Scene;
+import javafx.scene.control.Alert;
 import javafx.scene.control.Button;
 import javafx.scene.control.CheckBox;
 import javafx.scene.control.Label;
@@ -207,7 +208,7 @@ public class App extends Application
 				@Override
 				public void handle(ActionEvent event)
 				{
-					Alert alert = new Alert(AlertType.INFORMATION);
+					Alert alert = new Alert(Alert.AlertType.INFORMATION);
 					alert.setTitle("Information Dialog");
 					alert.setHeaderText(null);
 					alert.setContentText("I have a great message for you!");
